@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.photo.dao.FileManageDAO">
+    <insert id="addFileInfo">
+        insert into file_d(
+        FILE_ID,
+        FILE_NAME,
+        ADMDVS_PROV,
+        ADMDVS_CITY,
+        ADMDVS_PT,
+        FILE_SIZE,
+        FILE_TYPE,
+        FILE_PATH,
+        USER_NAME,
+        FILE_DELETE_FLAG,
+        FILE_REMARKS,
+        DELETE_DAY,
+        UPDATE_TIME,
+        CREATE_TIME,
+        RESERVED1,
+        RESERVED2,
+        RESERVED3,
+        RESERVED4,
+        RESERVED5,
+        RESERVED6
+        ) values (
+        #{fileId},
+        #{fileName},
+        #{admdvsProv},
+        #{admdvsCity},
+        #{admdvsPt},
+        #{fileSize},
+        #{fileType},
+        #{filePath},
+        #{userName},
+        #{fileDeleteFlag},
+        #{fileRemarks},
+        #{deleteDay},
+        now(),
+        now(),
+        #{reserved1},
+        #{reserved2},
+        #{reserved3},
+        #{reserved4},
+        #{reserved5},
+        #{reserved6}
+        )
+    </insert>
+    <select id="queryFileOutList" resultType="com.photo.entity.fileManage.FileOutDTO">
+        select
+        FILE_ID AS fileId,
+        FILE_NAME AS fileName,
+        ADMDVS_PROV AS admdvsProv,
+        ADMDVS_CITY AS admdvsCity,
+        ADMDVS_PT AS admdvsPt,
+        FILE_SIZE AS fileSize,
+        FILE_TYPE AS fileType,
+        FILE_PATH AS filePath,
+        USER_NAME AS userName,
+        FILE_DELETE_FLAG AS fileDeleteFlag,
+        FILE_REMARKS AS fileRemarks,
+        DELETE_DAY AS deleteDay,
+        DATE_FORMAT(UPDATE_TIME, '%Y-%m-%d %H:%i:%s') AS updateTime,
+        DATE_FORMAT(CREATE_TIME, '%Y-%m-%d %H:%i:%s') AS createTime
+        from file_d
+        where 1 = 1
+        <if test="fileDeleteFlag != '' and fileDeleteFlag != null">
+            and FILE_DELETE_FLAG = #{fileDeleteFlag}
+        </if>
+        <if test='startDate != null and startDate != ""'>
+            <![CDATA[ and DATE_FORMAT(CREATE_TIME, '%Y-%m-%d') >= #{startDate}]]>
+        </if>
+        <if test='startDate != null and startDate != ""'>
+            <![CDATA[ and DATE_FORMAT(CREATE_TIME, '%Y-%m-%d') <= #{endDate}]]>
+        </if>
+        <if test='admdvsProvPt != null and admdvsProvPt != ""'>
+            and ADMDVS_PT like concat(#{admdvsProvPt}, '%')
+        </if>
+        <if test='admdvsPt != null and admdvsPt != ""'>
+            and ADMDVS_PT = #{admdvsPt}
+        </if>
+        order by CREATE_TIME desc
+    </select>
+</mapper>

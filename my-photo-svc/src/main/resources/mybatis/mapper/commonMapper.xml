@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.photo.dao.CommonDAO">
+    <insert id="addAdmdvs">
+        insert into admdvs_d(
+        ADMDVS_NAME,
+        ADMDVS_NAME_PT,
+        ADMDVS_PROV,
+        ADMDVS_PROV_PT
+        ) VALUES (
+        #{admdvsName},
+        #{admdvsNamePt},
+        #{admdvsProv},
+        #{admdvsProvPt}
+        )
+    </insert>
+    <select id="queryAdmdvsProvList" resultType="com.photo.entity.admdvs.AdmdvsProvOutDTO">
+        select ADMDVS_PROV AS label,
+               ADMDVS_PROV_PT AS value
+        from admdvs_d
+        where ADMDVS_NAME_PT = ADMDVS_PROV_PT
+    </select>
+    <select id="queryAdmdvsNameListByAdmdvsProvPT" resultType="com.photo.entity.admdvs.AdmdvsNameOutDTO">
+        select ADMDVS_NAME AS label,
+        ADMDVS_NAME_PT AS value
+        from admdvs_d
+        where ADMDVS_NAME_PT != ADMDVS_PROV_PT
+        and ADMDVS_PROV_PT = #{admdvsProvPT}
+    </select>
+    <select id="queryAdmdvsCount" resultType="java.lang.Integer">
+        select count(1)
+        from admdvs_d
+        where 1 = 1
+        <if test="admdvsNamePt != '' and admdvsNamePt != null">
+            AND ADMDVS_NAME_PT = #{admdvsNamePt}
+        </if>
+        <if test="admdvsProvPt != '' and admdvsProvPt != null">
+            AND ADMDVS_PROV_PT = #{admdvsProvPt}
+        </if>
+    </select>
+    <select id="queryAdmdvsProvInfo" resultType="com.photo.entity.admdvs.AdmdvsOutDTO">
+        select ADMDVS_PROV AS admdvsProv,
+            ADMDVS_NAME AS admdvsName
+        from admdvs_d
+        where 1 = 1
+        <if test="admdvsProvPt != '' and admdvsProvPt != null">
+            and ADMDVS_NAME_PT = ADMDVS_PROV_PT
+            and ADMDVS_PROV_PT = #{admdvsProvPt}
+        </if>
+        <if test="admdvsNamePt != '' and admdvsNamePt != null">
+            AND ADMDVS_NAME_PT != ADMDVS_PROV_PT
+            AND ADMDVS_NAME_PT = #{admdvsNamePt}
+        </if>
+    </select>
+</mapper>
