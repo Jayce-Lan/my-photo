@@ -14,7 +14,7 @@
           </el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="文件地点（省+市）">
+      <el-form-item label="文件夹（省+文件夹）">
         <el-cascader
           v-model="sizeForm.admdvs"
           :options="admdvsList"
@@ -69,7 +69,7 @@
           </el-table-column>
           <el-table-column
             prop="admdvsCity"
-            label="文件所在市"
+            label="文件夹"
             fixed
             width="200">
           </el-table-column>
@@ -91,8 +91,8 @@
           </el-table-column>
           <el-table-column
             prop="fileSize"
-            label="文件大小（KB）"
-            width="120">
+            label="文件大小（MB）"
+            width="130">
           </el-table-column>
           <el-table-column
             prop="fileType"
@@ -101,7 +101,7 @@
           </el-table-column>
           <el-table-column
             prop="admdvsPt"
-            label="省市拼音"
+            label="文件夹拼音"
             width="350">
           </el-table-column>
           <el-table-column
@@ -134,8 +134,8 @@
             label="操作"
             width="100">
             <template slot-scope="scope">
-              <el-button @click="handleClick(scope.row)" type="text" size="small">修改</el-button>
-              <el-button @click="handleClickDelete(scope.row)" type="text" size="small">删除</el-button>
+              <el-button @click="handleClick(scope.row)" type="primary" size="mini" icon="el-icon-edit" circle></el-button>
+              <el-button @click="handleClickDelete(scope.row)" type="danger" size="mini" icon="el-icon-delete" circle></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -159,8 +159,8 @@
       width="30%"
       :before-close="handleClose">
       <el-radio-group v-model="labelPosition" size="small">
-        <el-radio-button label="1">从去过的地方选择</el-radio-button>
-        <el-radio-button label="2">手动录入新的地标</el-radio-button>
+        <el-radio-button label="1">上传至原有文件夹</el-radio-button>
+        <el-radio-button label="2">新建文件夹</el-radio-button>
       </el-radio-group>
       <el-form :model="uploadForm" ref="uploadForm"  label-width="80px" label-position="right">
         <el-form-item label="文件地点">
@@ -174,7 +174,7 @@
         <el-form-item label="所在省">
           <el-input v-model="uploadForm.admdvsProv" :disabled="labelPosition == '1'"></el-input>
         </el-form-item>
-        <el-form-item label="所在市">
+        <el-form-item label="文件夹">
           <el-input v-model="uploadForm.admdvsName" :disabled="labelPosition == '1'"></el-input>
         </el-form-item>
       </el-form>
@@ -288,16 +288,13 @@ export default {
       this.$confirm('确认关闭？')
         .then(_ => {
           done();
-        })
-        .catch(_ => {});
+        }).catch(_ => {});
     },
     fnQuery() {
       const data = Object.assign(this.sizeForm, {
         pageNum: this.currentPage,
         pageSize: this.sizePage
       });
-      console.log(data)
-      let startDate, endDate;
       if (data.admdvs != null && data.admdvs != "") {
         for (let i = 0; i < data.admdvs.length; i++) {
           if (i == 0) {
@@ -348,11 +345,41 @@ export default {
       this.$message.error(err);
       console.log(err);
     },
+    // 点击每列的修改按钮
     handleClick(row) {
       console.log(row);
     },
+    // 点击每列的删除按钮
     handleClickDelete(row) {
-      console.log(row)
+      this.$confirm('此操作文件将会进入回收站,并于30天后自动删除,是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.fnDeleteFileByOne(row)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
+    },
+    // 删除/还原单个文件
+    fnDeleteFileByOne(value) {
+      let data = {
+        fileId: value.fileId,
+        fileDeleteFlag: this.activeName == "first" ? "0" : "1"
+      }
+      console.log(data)
+      this.$http.post("/api/fileManageController/updateFileDeleteFlagByFileId", data)
+        .then(res => {
+        if (res.body.code != "200") {
+          this.$message.error(res.body.errorMsg)
+        } else {
+          this.$message.success(res.body.data)
+          this.fnQuery()
+        }
+      })
     },
     fnChangeActiveName(tab, event) {
       console.log(tab, event);
@@ -395,10 +422,10 @@ export default {
         this.$message.error("请填写正确的省！");
         return;
       }
-      // if (data.admdvsName == "" || data.admdvsName == null) {
-      //   this.$message.error("请填写正确的市！");
-      //   return;
-      // }
+      if (data.admdvsName == "" || data.admdvsName == null) {
+        this.$message.error("请填写正确的文件夹！");
+        return;
+      }
       this.$http.post("/api/fileManageController/addAdmdvs", data)
         .then((res) => {
           this.$message.success(res.body.data);

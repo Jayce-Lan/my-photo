@@ -29,6 +29,7 @@ create table file_d (
 
 create index `index_file_admdvs_pt` on file_d(ADMDVS_PT);
 create index `index_file_file_type` on file_d(FILE_TYPE);
+create index `index_file_delete_falg` on file_d(FILE_DELETE_FLAG);
 
 -- 持久层存储标签，防止Redis失效导致的标签丢失
 create table tar_x(

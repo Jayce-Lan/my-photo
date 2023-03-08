@@ -48,6 +48,25 @@
         #{reserved6}
         )
     </insert>
+    <update id="updateFileByFileId">
+        update file_d set ADMDVS_PROV = #{admdvsProv},
+                          ADMDVS_CITY = #{admdvsCity},
+                          ADMDVS_PT = #{admdvsPt},
+                          UPDATE_TIME = now()
+        where FILE_ID = #{fileId}
+    </update>
+    <update id="updateFileDeleteFlagByFileId">
+        update file_d set FILE_DELETE_FLAG = #{fileDeleteFlag},
+                          DELETE_DAY = #{deleteDay},
+                          UPDATE_TIME = now()
+        where FILE_ID = #{fileId}
+    </update>
+    <delete id="deleteFileByFileId">
+        delete
+        from file_d
+        where FILE_ID = #{fileId}
+        and FILE_DELETE_FLAG = '0'
+    </delete>
     <select id="queryFileOutList" resultType="com.photo.entity.fileManage.FileOutDTO">
         select
         FILE_ID AS fileId,

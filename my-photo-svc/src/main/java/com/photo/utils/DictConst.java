@@ -56,4 +56,8 @@ public class DictConst {
      * 文件是否在回收站中: 0，是，文件无效
      */
     public static final String FILE_DELETE_FLAG_DELETE = "0";
+    /**
+     * 文件在删除后在回收站的时间
+     */
+    public static final Integer FILE_DELETE_DAY = 30;
 }

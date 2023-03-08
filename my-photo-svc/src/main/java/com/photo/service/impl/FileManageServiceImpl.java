@@ -6,6 +6,7 @@ import com.photo.entity.fileManage.FileQueryInDTO;
 import com.photo.entity.ReturnMsgData;
 import com.photo.entity.admdvs.AdmdvsInDTO;
 import com.photo.entity.admdvs.AdmdvsOutDTO;
+import com.photo.entity.fileManage.FileUpdateInDTO;
 import com.photo.service.CommonService;
 import com.photo.service.FileManageService;
 import com.photo.utils.ChangeUtil;
@@ -25,6 +26,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 文件管理的 Sevrice 层
+ */
+
 @Service("fileManageService")
 @Slf4j
 @Transactional
@@ -39,7 +44,7 @@ public class FileManageServiceImpl implements FileManageService {
     private String filePath;
 
     @Override
-    public ReturnMsgData uploadFile(MultipartFile multipartFile, Map<String, String> map) throws IOException {
+    public ReturnMsgData uploadFile(MultipartFile multipartFile, Map<String, String> map) throws Exception {
         ReturnMsgData returnMsgData;
         // 判定文件是否存在
         if (multipartFile.isEmpty()) {
@@ -58,7 +63,7 @@ public class FileManageServiceImpl implements FileManageService {
         fileOutInfo.setFilePath(fileSavePath);
         int count = fileManageDAO.addFileInfo(fileOutInfo);
         if (count != 1) {
-            throw new RuntimeException("数据插入失败！");
+            throw new Exception("数据插入失败！");
         }
         // 判断文件父目录是否存在
         if (!dest.getParentFile().exists()) {
@@ -96,14 +101,33 @@ public class FileManageServiceImpl implements FileManageService {
             } else {
                 item.setFilePath("");
             }
-            item.setFileSize(item.getFileSize().divide(new BigDecimal("1024"), 2, BigDecimal.ROUND_HALF_UP));
+            item.setFileSize(item.getFileSize().divide(new BigDecimal("1048576"), 2, BigDecimal.ROUND_HALF_UP));
         });
         return fileOutDTOS;
     }
 
     /**
+     * 根据传入的id+删除标识判定将文件放入回收站/还原
+     *      fileDeleteFlag = 0: 将文件放入回收站，并设置30天后自动删除（这里只是设置时间，删除动作由定时任务触发实现）
+     *      fileDeleteFlag = 1: 将文件从回收站放回，并删除剩余时间
+     * @param fileUpdateInDTO
+     */
+    @Override
+    public void updateFileDeleteFlagByFileId(FileUpdateInDTO fileUpdateInDTO) throws Exception {
+        if (DictConst.FILE_DELETE_FLAG_DELETE.equals(fileUpdateInDTO.getFileDeleteFlag())) {
+            fileUpdateInDTO.setDeleteDay(DictConst.FILE_DELETE_DAY);
+        } else {
+            fileUpdateInDTO.setDeleteDay(null);
+        }
+        int count = fileManageDAO.updateFileDeleteFlagByFileId(fileUpdateInDTO);
+        if (count != 1) {
+            throw new Exception("数据插入失败");
+        }
+    }
+
+    /**
      * 单个生成可以写表的文件
-     * 修改：由于并发产生的问题，不再在此处做添加区划处理，防止出现错误
+     * 修改：由于并发产生的问题，不再在此处做添加区划/文件夹的新增处理，防止出现错误
      * @param map 文件的夹带对象
      * @param multipartFile 文件本体
      * @return 返回写表对象

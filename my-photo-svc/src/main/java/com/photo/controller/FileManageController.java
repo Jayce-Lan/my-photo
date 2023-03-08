@@ -6,6 +6,7 @@ import com.photo.entity.admdvs.AdmdvsInDTO;
 import com.photo.entity.fileManage.FileOutDTO;
 import com.photo.entity.fileManage.FileQueryInDTO;
 import com.photo.entity.ReturnMsgData;
+import com.photo.entity.fileManage.FileUpdateInDTO;
 import com.photo.service.CommonService;
 import com.photo.service.FileManageService;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -28,7 +28,7 @@ public class FileManageController {
     @PostMapping("upload")
     @ResponseBody
     @CrossOrigin(originPatterns = "http://localhost:9006") // 解决跨域
-    public ReturnMsgData upload(@RequestParam Map<String, String> map, @RequestParam("file")MultipartFile multipartFile) throws IOException {
+    public ReturnMsgData upload(@RequestParam Map<String, String> map, @RequestParam("file")MultipartFile multipartFile) throws Exception {
         return fileManageService.uploadFile(multipartFile, map);
     }
 
@@ -44,5 +44,17 @@ public class FileManageController {
     public ReturnMsgData addAdmdvs(AdmdvsInDTO admdvs) {
         commonService.addAdmdvs(admdvs);
         return new ReturnMsgData("插入成功！");
+    }
+
+    @PostMapping("updateFileDeleteFlagByFileId")
+    public ReturnMsgData updateFileDeleteFlagByFileId(FileUpdateInDTO fileUpdateInDTO) {
+        ReturnMsgData returnMsgData;
+        try {
+            fileManageService.updateFileDeleteFlagByFileId(fileUpdateInDTO);
+            returnMsgData = new ReturnMsgData("操作成功！");
+        } catch (Exception e) {
+            returnMsgData = new ReturnMsgData("100", e.getMessage());
+        }
+        return returnMsgData;
     }
 }
