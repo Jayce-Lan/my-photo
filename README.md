@@ -12,10 +12,22 @@
 
 ---
 
-
-
 ## 项目说明
 
 - my-photo-svc ；后端
 
 - my-photo ；前端
+
+### my-photo-svc
+
+> 项目的后端文件，其中主要的一些说明如下
+
+ 
+
+| 文件名                  | 使用简介                 |
+| -------------------- | -------------------- |
+| my_photo.sql         | 存储项目的sql建表、构建索引的文件   |
+| RedisUtil.java       | 存储项目中用到的 `Redis` 工具类 |
+| SchedulerConfig.java | 定时任务的连接池             |
+| TimerTaskUtil.java   | 项目的定时任务              |
+|                      |                      |
